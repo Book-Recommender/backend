@@ -12,13 +12,11 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 2c9f875913ee60ca25ce70243dc24d5b6415598c  # frozen: v4.6.0
     hooks:
-
       - id: check-added-large-files
       - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: trailing-whitespace
         args:
-
           - --markdown-linebreak-ext=md
         exclude: \.gitignore
 
@@ -33,7 +31,6 @@ repos:
       - id: yamlfix
         args:
           - --config-file
-
           - .yamlfix.toml
 
   - repo: https://github.com/adrienverge/yamllint
@@ -64,3 +61,14 @@ repos:
     hooks:
       - id: typos
         args: []
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.0
+    hooks:
+      - id: ruff-format
+      - id: ruff
+
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.352
+    hooks:
+      - id: pyright

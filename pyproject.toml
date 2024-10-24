@@ -16,5 +16,14 @@ distribution = false
   dev = ["pre-commit>=4.0.1", "pytest>=8.3.3"]
 
   [tool.pdm.scripts]
-  pre-commit = "pre-commit run --all-files"
+  pre-commit = "pre-commit"
   test = "pytest"
+
+[tool.ruff]
+line-length = 120
+
+[tool.pyright]
+include = ["src/**/*.py"]
+
+venvPath = "."
+venv = ".venv"

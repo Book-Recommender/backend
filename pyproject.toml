@@ -18,6 +18,7 @@ distribution = false
   [tool.pdm.scripts]
   pre-commit = "pre-commit"
   test = "pytest"
+  dev = "fastapi dev src/openbook/server.py"
 
 [tool.ruff]
 line-length = 120

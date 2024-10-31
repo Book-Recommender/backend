@@ -1,5 +1,7 @@
 # book-recommender
 
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Book-Recommender/backend/main.svg)](https://results.pre-commit.ci/latest/github/Book-Recommender/backend/main)
+
 ## Development
 
 We use `PDM` for packaging (see [PDM](https://pdm-project.org/latest/)). Install the project and dev dependencies with

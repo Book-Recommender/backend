@@ -25,8 +25,5 @@ jobs:
       - name: Install dependencies
         run: pdm install --dev
 
-      - name: Run precommit
-        run: pdm pre-commit
-
       - name: Run tests
         run: pdm test

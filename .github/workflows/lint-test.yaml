@@ -25,7 +25,20 @@ jobs:
       - name: Install dependencies
         run: pdm install --dev
 
-      - name: Run precommit
+      - name: Cache pre-commit hooks
+        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a  # v4.1.2
+        env:
+          cache-name: cache-pre-commit
+        with:
+          # https://pre-commit.com/#managing-ci-caches
+          path: ~/.cache/pre-commit
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Run pre-commit
         run: pdm pre-commit
 
       - name: Run tests

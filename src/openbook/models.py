@@ -5,8 +5,10 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
+
 class BookStatus(enum.Enum):
     """Enumeration for the status of a book in a user's list."""
+
     RECOMMENDED = "recommended"
     READING = "reading"
     COMPLETED = "completed"

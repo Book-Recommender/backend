@@ -54,7 +54,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String, unique=True, nullable=False)
     name = Column(String)
-    password = Column(String)
 
     # Many-to-many relationship with Book through UserBook
     user_book_entries = relationship("UserBook", back_populates="user")

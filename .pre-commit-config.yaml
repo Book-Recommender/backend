@@ -25,14 +25,6 @@ repos:
     hooks:
       - id: check-github-workflows
 
-  - repo: https://github.com/lyz-code/yamlfix
-    rev: 47039c9bf8039e81f092c9777a1bc8be32fb7870  # frozen: 1.16.0
-    hooks:
-      - id: yamlfix
-        args:
-          - --config-file
-          - .yamlfix.toml
-
   - repo: https://github.com/adrienverge/yamllint
     rev: 81e9f98ffd059efe8aa9c1b1a42e5cce61b640c6  # frozen: v1.35.1
     hooks:

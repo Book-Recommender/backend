@@ -5,30 +5,28 @@ from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
-
 class BookStatus(enum.Enum):
     """Enumeration for the status of a book in a user's list."""
-
     RECOMMENDED = "recommended"
     READING = "reading"
     COMPLETED = "completed"
 
 
 class UserBookList(Base):
-    """Represents the association between userslist and books."""
+    """Represents the association between users and books."""
 
     __tablename__ = "user_book_lists"
 
     # Association Table Columns
     book_id = Column(Integer, ForeignKey("books.id"), primary_key=True)
-    user_list_id = Column(Integer, ForeignKey("user_lists.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     status = Column(Enum(BookStatus), default=BookStatus.RECOMMENDED)
 
-    # Relationships to Book and User_List
+    # Relationships to Book and User
     book = relationship("Book", back_populates="user_book_list_entries")
-    user_list = relationship("UserList", back_populates="user_book_list_entries")
+    user = relationship("User", back_populates="user_book_list_entries")
 
-    __table_args__ = (Index("idx_user_book", "user_list_id", "book_id"),)
+    __table_args__ = (Index("idx_user_book", "user_id", "book_id"),)
 
 
 class AuthorBook(Base):
@@ -36,7 +34,7 @@ class AuthorBook(Base):
 
     __tablename__ = "author_book"
 
-    # Table Columns
+    # Association Table Columns
     book_id = Column(Integer, ForeignKey("books.id"), primary_key=True)
     author_id = Column(Integer, ForeignKey("authors.id"), primary_key=True)
 
@@ -56,8 +54,8 @@ class User(Base):
     name = Column(String)
     password = Column(String)
 
-    # One-to-one relationship with User_List
-    user_list = relationship("UserList", back_populates="user", uselist=False)
+    # Many-to-many relationship with Book through UserBookList
+    user_book_list_entries = relationship("UserBookList", back_populates="user")
 
     __table_args__ = (Index("idx_user_email", "email"),)
 
@@ -71,10 +69,10 @@ class Book(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
 
-    # Many-to-many relationship with User_List through User_Book_List
+    # Many-to-many relationship with User through UserBookList
     user_book_list_entries = relationship("UserBookList", back_populates="book")
 
-    # Many-to-many relationship with Author through Author_Book
+    # Many-to-many relationship with Author through AuthorBook
     authors = relationship("AuthorBook", back_populates="book")
 
     __table_args__ = (Index("idx_book_title", "title"),)
@@ -89,25 +87,7 @@ class Author(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
 
-    # Many-to-many relationship with Book through Author_Book association
+    # Many-to-many relationship with Book through AuthorBook association
     books = relationship("AuthorBook", back_populates="author")
 
     __table_args__ = (Index("idx_author_name", "name"),)
-
-
-class UserList(Base):
-    """Represents a user's reading list."""
-
-    __tablename__ = "user_lists"
-
-    # Table Columns
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-
-    # Relationship with User
-    user = relationship("User", back_populates="user_list")
-
-    # Many-to-many relationship with Book through User_Book_List
-    user_book_list_entries = relationship("UserBookList", back_populates="user_list")
-
-    __table_args__ = (Index("idx_user_list_user_id", "user_id"),)

@@ -14,10 +14,10 @@ class BookStatus(enum.Enum):
     COMPLETED = "completed"
 
 
-class UserBookList(Base):
+class UserBook(Base):
     """Represents the association between users and books."""
 
-    __tablename__ = "user_book_lists"
+    __tablename__ = "user_book"
 
     # Association Table Columns
     book_id = Column(Integer, ForeignKey("books.id"), primary_key=True)
@@ -25,8 +25,8 @@ class UserBookList(Base):
     status = Column(Enum(BookStatus), default=BookStatus.RECOMMENDED)
 
     # Relationships to Book and User
-    book = relationship("Book", back_populates="user_book_list_entries")
-    user = relationship("User", back_populates="user_book_list_entries")
+    book = relationship("Book", back_populates="user_book_entries")
+    user = relationship("User", back_populates="user_book_entries")
 
     __table_args__ = (Index("idx_user_book", "user_id", "book_id"),)
 
@@ -56,8 +56,8 @@ class User(Base):
     name = Column(String)
     password = Column(String)
 
-    # Many-to-many relationship with Book through UserBookList
-    user_book_list_entries = relationship("UserBookList", back_populates="user")
+    # Many-to-many relationship with Book through UserBook
+    user_book_entries = relationship("UserBook", back_populates="user")
 
     __table_args__ = (Index("idx_user_email", "email"),)
 
@@ -71,8 +71,8 @@ class Book(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
 
-    # Many-to-many relationship with User through UserBookList
-    user_book_list_entries = relationship("UserBookList", back_populates="book")
+    # Many-to-many relationship with User through UserBook
+    user_book_entries = relationship("UserBook", back_populates="book")
 
     # Many-to-many relationship with Author through AuthorBook
     authors = relationship("AuthorBook", back_populates="book")

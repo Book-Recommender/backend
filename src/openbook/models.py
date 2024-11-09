@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Enum, ForeignKey, Index, Integer, String
+from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column, relationship
 
 
@@ -21,14 +21,12 @@ class UserBook(Base):
 
     __tablename__ = "user_book"
 
-    # Relationships to Book and User with type hints
     book: Mapped["Book"] = relationship("Book", back_populates="user")
     user: Mapped["User"] = relationship("User", back_populates="book")
 
-    # Association Table Columns with type hints
-    book_id: Mapped[int] = mapped_column(Integer, ForeignKey("book.id"), primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"), primary_key=True)
-    status: Mapped[BookStatus] = mapped_column(Enum(BookStatus), default=BookStatus.RECOMMENDED)
+    book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    status: Mapped[BookStatus] = mapped_column(default=BookStatus.RECOMMENDED)
 
 
 class AuthorBook(Base):
@@ -36,13 +34,11 @@ class AuthorBook(Base):
 
     __tablename__ = "author_book"
 
-    # Relationships to Author and Book with type hints
     author: Mapped["Author"] = relationship("Author", back_populates="book")
     book: Mapped["Book"] = relationship("Book", back_populates="author")
 
-    # Association Table Columns with type hints
-    book_id: Mapped[int] = mapped_column(Integer, ForeignKey("book.id"), primary_key=True)
-    author_id: Mapped[int] = mapped_column(Integer, ForeignKey("author.id"), primary_key=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), primary_key=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey("author.id"), primary_key=True)
 
 
 class User(Base):
@@ -50,13 +46,11 @@ class User(Base):
 
     __tablename__ = "user"
 
-    # Many-to-many relationship with Book through UserBook with type hints
     book: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="user")
 
-    # Table Columns with type hints
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column()
 
 
 class Book(Base):
@@ -64,15 +58,12 @@ class Book(Base):
 
     __tablename__ = "book"
 
-    # Many-to-many relationship with User through UserBook with type hints
     user: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="book")
 
-    # Many-to-many relationship with Author through AuthorBook with type hints
     author: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="book")
 
-    # Table Columns with type hints
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(nullable=False)
 
     __table_args__ = (Index("idx_book_title", "title"),)
 
@@ -82,11 +73,9 @@ class Author(Base):
 
     __tablename__ = "author"
 
-    # Many-to-many relationship with Book through AuthorBook association with type hints
     book: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="author")
 
-    # Table Columns with type hints
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(nullable=False)
 
     __table_args__ = (Index("idx_author_name", "name"),)

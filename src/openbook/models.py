@@ -1,57 +1,81 @@
-from sqlalchemy import Column, String, Integer, ForeignKey
-from sqlalchemy.orm import declarative_base, relationship
+import enum
 
-Base = declarative_base()
+from sqlalchemy import ForeignKey, Index
+from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column, relationship
 
-class Reading_list_book(Base):
-    __titlename__ = 'reading_list_book'
-    book_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    reading_list_id = Column(Integer, ForeignKey('reading_lists'), primary_key=True)
 
-    status = Column(String, default='reading')
+class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
+    """Base class for all models, using MappedAsDataclass and DeclarativeBase in SQLAlchemy 2.0."""
 
-    books = relationship("Book", back_populates="reading_list_book")
-    reading_lists = relationship("Reading_List", back_populates="reading_list_book")
-    
-class Recommended_list_book(Base):
-    __titlename__ = 'recommended_list_book'
-    book_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    recommended_list_id = Column(Integer, ForeignKey('recommended_lists'), primary_key=True)
 
-    books = relationship("Book", back_populates="recommended_list_book")
-    recommended_lists = relationship("Recommended_list", back_populates="recommended_list_book")  
+class BookStatus(enum.Enum):
+    """Enumeration for the status of a book in a user's list."""
+
+    RECOMMENDED = "recommended"
+    READING = "reading"
+    COMPLETED = "completed"
+
+
+class UserBook(Base):
+    """Represents the association between users and books."""
+
+    __tablename__ = "user_book"
+
+    book: Mapped["Book"] = relationship("Book", back_populates="user")
+    user: Mapped["User"] = relationship("User", back_populates="book")
+
+    book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    status: Mapped[BookStatus] = mapped_column(default=BookStatus.RECOMMENDED)
+
+
+class AuthorBook(Base):
+    """Represents the association between authors and books."""
+
+    __tablename__ = "author_book"
+
+    author: Mapped["Author"] = relationship("Author", back_populates="book")
+    book: Mapped["Book"] = relationship("Book", back_populates="author")
+
+    book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), primary_key=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey("author.id"), primary_key=True)
+
 
 class User(Base):
-    __tablename__ = 'users'
+    """Represents a user in the system."""
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String, unique=True, nullable=False)
-    name = Column(String)
-    password = Column(String)
+    __tablename__ = "user"
 
-    completed_list = relationship("Completed_list", back_populates= "users", uselist=False)
+    book: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="user")
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column()
+
 
 class Book(Base):
-    __tablename__ = 'books'
+    """Represents a book in the system."""
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String, nullable=False)
-    author = Column(String, nullable=False)
+    __tablename__ = "book"
 
-    reading_list_book = relationship("Reading_list_book", back_populates="books")
+    user: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="book")
 
-class Reading_list(Base):
-    __tablename__ = 'reading_lists'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True)
-    
-    user = relationship("User", back_populates="reading_lists")
+    author: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="book")
 
-    reading_list_book = relationship("Reading_list_book", back_populates="reading_lists")
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(nullable=False)
 
-class Recommended_list(Base):
-    __tablename__ = 'recommended_lists'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True)
+    __table_args__ = (Index("idx_book_title", "title"),)
 
-    user = relationship("User", back_populates="recommended_lists")
+
+class Author(Base):
+    """Represents an author of books."""
+
+    __tablename__ = "author"
+
+    book: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="author")
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+
+    __table_args__ = (Index("idx_author_name", "name"),)

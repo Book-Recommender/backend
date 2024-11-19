@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from openbook.endpoints import routers
 
+app = FastAPI(title="BookClub")
 
-@app.get("/")
-async def index() -> str:
-    """Index function."""
-    return "hello"
+for router in routers:
+    app.include_router(router)

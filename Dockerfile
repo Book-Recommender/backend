@@ -3,6 +3,7 @@ FROM python:3.12.6-slim-bullseye@sha256:6fe70237cff8ad7c0a91b992cb7cb454187dfd2e
 RUN pip install -U pip setuptools wheel && pip install pdm
 
 WORKDIR /app
+COPY model.onnx model.onnx
 COPY pyproject.toml pdm.lock ./
 RUN mkdir __pypackages__ && pdm install --prod --no-lock --no-editable
 COPY src/ src/

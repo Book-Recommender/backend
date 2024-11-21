@@ -1,0 +1,18 @@
+accesslog = true
+defaultEntryPoints = ["https"]
+
+[entryPoints]
+  [entryPoints.https]
+  address = ":4430"
+
+[api]
+dashboard = true
+insecure = false
+
+[log]
+level = "INFO"
+
+[providers.docker]
+exposedByDefault = false
+
+# [certificatesResolvers.myresolver.tailscale]

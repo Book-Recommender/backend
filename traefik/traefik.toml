@@ -2,6 +2,9 @@ accesslog = true
 defaultEntryPoints = ["https"]
 
 [entryPoints]
+  [entryPoints.traefik]
+  address = ":8080"
+
   [entryPoints.https]
   address = ":4430"
 
@@ -14,5 +17,3 @@ level = "INFO"
 
 [providers.docker]
 exposedByDefault = false
-
-# [certificatesResolvers.myresolver.tailscale]

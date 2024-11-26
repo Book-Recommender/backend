@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from src.openbook.database import DATABASE_URL
+from src.openbook.constants import settings
 from src.openbook.models.orm import Base
 
 # this is the Alembic Config object, which provides
@@ -11,7 +11,7 @@ from src.openbook.models.orm import Base
 config = context.config
 
 # implicitly create the database file
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

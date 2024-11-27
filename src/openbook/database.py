@@ -1,8 +1,11 @@
 from collections.abc import Generator
 
 from pydantic_settings import BaseSettings
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
+from sqlalchemy.engine import Engine
+from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import ConnectionPoolEntry
 
 
 class Settings(BaseSettings):
@@ -32,3 +35,11 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection: DBAPIConnection, _connection_record: ConnectionPoolEntry) -> None:
+    """Event to turn on WAL mode for every connection."""
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.close()

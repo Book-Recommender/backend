@@ -5,7 +5,7 @@ services:
     tty: true
     restart: always
     environment:
-      - DATABASE_URL=sqlite:///var/lib/bookclub/bookclub.db
+      - DATABASE_URL=sqlite:////var/lib/bookclub/bookclub.db
     volumes:
       - db:/var/lib/bookclub
     labels:
@@ -36,5 +36,6 @@ services:
       - type: bind
         source: traefik/traefik.toml
         target: /etc/traefik/traefik.toml
+
 volumes:
   db:

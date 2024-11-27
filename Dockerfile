@@ -14,8 +14,11 @@ ENV PYTHONPATH=/app/pkgs
 WORKDIR /app
 COPY --from=builder /app/__pypackages__/3.12/lib pkgs/
 
+COPY alembic/ alembic/
+COPY alembic.ini ./
+COPY entrypoint.sh ./
 COPY src/ src/
 
-CMD ["python", "-m", "fastapi", "run", "src/openbook/server.py"]
+CMD ["./entrypoint.sh"]
 
 EXPOSE 8000

@@ -11,7 +11,7 @@ from sqlalchemy.pool import ConnectionPoolEntry
 class Settings(BaseSettings):
     """Settings function."""
 
-    DATABASE_URL: str = "sqlite:///mydb.db"
+    DATABASE_URL: str = "sqlite:///bookclub.db"
 
     class Config:
         """Environment config."""

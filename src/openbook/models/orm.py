@@ -21,8 +21,8 @@ class UserBook(Base):
 
     __tablename__ = "user_book"
 
-    book: Mapped["Book"] = relationship("Book", back_populates="user")
-    user: Mapped["User"] = relationship("User", back_populates="book")
+    book: Mapped["Book"] = relationship("Book", back_populates="user", init=False)
+    user: Mapped["User"] = relationship("User", back_populates="book", init=False)
 
     book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
@@ -34,8 +34,8 @@ class AuthorBook(Base):
 
     __tablename__ = "author_book"
 
-    author: Mapped["Author"] = relationship("Author", back_populates="book")
-    book: Mapped["Book"] = relationship("Book", back_populates="author")
+    author: Mapped["Author"] = relationship("Author", back_populates="book", init=False)
+    book: Mapped["Book"] = relationship("Book", back_populates="author", init=False)
 
     book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), primary_key=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("author.id"), primary_key=True)
@@ -46,9 +46,9 @@ class User(Base):
 
     __tablename__ = "user"
 
-    book: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="user")
+    book: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="user", init=False)
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     name: Mapped[str] = mapped_column()
 
@@ -58,11 +58,11 @@ class Book(Base):
 
     __tablename__ = "book"
 
-    user: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="book")
+    user: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="book", init=False)
 
-    author: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="book")
+    author: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="book", init=False)
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
     title: Mapped[str] = mapped_column(nullable=False)
 
     __table_args__ = (Index("idx_book_title", "title"),)
@@ -73,9 +73,9 @@ class Author(Base):
 
     __tablename__ = "author"
 
-    book: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="author")
+    book: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="author", init=False)
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
     name: Mapped[str] = mapped_column(nullable=False)
 
     __table_args__ = (Index("idx_author_name", "name"),)

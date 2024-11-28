@@ -34,6 +34,7 @@ def upgrade() -> None:
         "book",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("title", sa.String(), nullable=False),
+        sa.Column("isbn", sa.String(), nullable=False, unique=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index("idx_book_title", "book", ["title"], unique=False)

@@ -63,6 +63,7 @@ class Book(Base):
     author: Mapped[list["AuthorBook"]] = relationship("AuthorBook", back_populates="book", init=False)
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
+    isbn: Mapped[str] = mapped_column(unique=True)
     title: Mapped[str] = mapped_column(nullable=False)
 
     __table_args__ = (Index("idx_book_title", "title"),)

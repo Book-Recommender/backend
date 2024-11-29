@@ -11,6 +11,7 @@ class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
 class BookStatus(enum.Enum):
     """Enumeration for the status of a book in a user's list."""
 
+    UNREAD = "unread"
     RECOMMENDED = "recommended"
     READING = "reading"
     COMPLETED = "completed"

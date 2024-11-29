@@ -17,6 +17,7 @@ class Book(BaseModel):
     """Book."""
 
     id: int
+    isbn: str
     title: str
     authors: list[Author]
     status: BookStatus

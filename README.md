@@ -19,7 +19,7 @@ pdm run pre-commit install
 We use `pytest`. Run tests with
 
 ```bash
-pdm test
+PYTHONPATH=src pdm test
 ```
 
 ## Running

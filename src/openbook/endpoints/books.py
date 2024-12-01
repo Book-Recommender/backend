@@ -12,8 +12,6 @@ from openbook.models.schemas import Book as BookSchema
 
 router = APIRouter(tags=["books"])
 
-router = APIRouter(tags=["books"])
-
 
 @router.get("/books")
 async def get_books(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:

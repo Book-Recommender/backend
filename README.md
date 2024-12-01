@@ -23,10 +23,13 @@ pdm test
 ```
 
 To test database functionality, if the above command does not work type:
+
 ```bash
 PYTHONPATH=src pdm test
 ```
-To test both type: 
+
+To test both type:
+
 ```bash
 PYTHONPATH=src pytest tests/
 ```

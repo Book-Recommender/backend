@@ -194,6 +194,12 @@ where fts_author = :author limit :limit offset :skip
 
     results = session.execute(stmt, params=params)
     return [
-        BookSchema(id=r[0], isbn=r[1], title=r[2], authors=[], status=orm.BookStatus.UNREAD if r[3] is None else r[3])
+        BookSchema(
+            id=r[0],
+            isbn=r[1],
+            title=r[2],
+            authors=[AuthorSchema(id=r[4], name=r[5], books=[])],
+            status=orm.BookStatus.UNREAD if r[3] is None else r[3],
+        )
         for r in results
     ]

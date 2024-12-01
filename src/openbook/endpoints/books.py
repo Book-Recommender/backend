@@ -174,15 +174,17 @@ async def search_books(
 
     if title:
         stmt = text("""\
-select fts_book.id, isbn, title, status from fts_book
+select fts_book.id, isbn, title, status, author.id, author.name from fts_book
 left join user_book on user_book.book_id = fts_book.id
 left join user on user_book.user_id = user.id
+join author_book on author_book.book_id = fts_book.id
+join author on author_book.author_id = author.id
 where fts_book = :title limit :limit offset :skip
 """)
         params = dict(title=title, limit=limit, skip=skip)
     elif author:
         stmt = text("""\
-select book.id, isbn, title, status from fts_author
+select book.id, isbn, title, status, fts_author.id, fts_author.name from fts_author
 join author_book on author_book.author_id = fts_author.id
 join book on book.id = author_book.book_id
 left join user_book on user_book.book_id = book.id

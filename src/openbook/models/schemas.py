@@ -21,3 +21,10 @@ class Book(BaseModel):
     title: str
     authors: list[Author]
     status: BookStatus
+
+
+class BookRequest(BaseModel):
+    """BookRequest."""
+
+    id: int
+    user_id: int

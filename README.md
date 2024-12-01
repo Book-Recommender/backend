@@ -25,6 +25,16 @@ pdm test
 To test database functionality, if the above command does not work type:
 
 ```bash
+pip install pdm
+```
+
+If that doesn't work try
+
+```bash
+pip3 install pdm
+```
+
+```bash
 PYTHONPATH=src pdm test
 ```
 

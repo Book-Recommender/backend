@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from openbook.database import get_db
 from openbook.models import orm
-from openbook.models.schemas import Book
+from openbook.models.schemas import Author, Book
 
 router = APIRouter(tags=["books"])
 
@@ -61,15 +61,17 @@ async def search_books(
 
     if title:
         stmt = text("""\
-select fts_book.id, isbn, title, status from fts_book
+select fts_book.id, isbn, title, status, author.id, author.name from fts_book
 left join user_book on user_book.book_id = fts_book.id
 left join user on user_book.user_id = user.id
+join author_book on author_book.book_id = fts_book.id
+join author on author_book.author_id = author.id
 where fts_book = :title limit :limit offset :skip
 """)
         params = dict(title=title, limit=limit, skip=skip)
     elif author:
         stmt = text("""\
-select book.id, isbn, title, status from fts_author
+select book.id, isbn, title, status, fts_author.id, fts_author.name from fts_author
 join author_book on author_book.author_id = fts_author.id
 join book on book.id = author_book.book_id
 left join user_book on user_book.book_id = book.id
@@ -81,6 +83,12 @@ where fts_author = :author limit :limit offset :skip
 
     results = session.execute(stmt, params=params)
     return [
-        Book(id=r[0], isbn=r[1], title=r[2], authors=[], status=orm.BookStatus.UNREAD if r[3] is None else r[3])
+        Book(
+            id=r[0],
+            isbn=r[1],
+            title=r[2],
+            authors=[Author(id=r[4], name=r[5], books=[])],
+            status=orm.BookStatus.UNREAD if r[3] is None else r[3],
+        )
         for r in results
     ]

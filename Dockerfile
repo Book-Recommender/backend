@@ -1,4 +1,4 @@
-FROM python:3.12.6-slim-bullseye@sha256:6fe70237cff8ad7c0a91b992cb7cb454187dfd2e3f08ce2d023907d76db8c287 AS builder
+FROM python:3.13.0-slim-bullseye@sha256:4b60efbc8e7ad07d50f9656de4108c2de55cd3a835ea75452ecab1310a178325 AS builder
 
 RUN pip install -U pip setuptools wheel && pip install pdm
 
@@ -8,7 +8,7 @@ RUN mkdir __pypackages__ && pdm install --prod --no-lock --no-editable
 COPY src/ src/
 RUN pdm install --prod --no-lock --no-editable
 
-FROM python:3.12.6-slim-bullseye@sha256:6fe70237cff8ad7c0a91b992cb7cb454187dfd2e3f08ce2d023907d76db8c287 AS prod
+FROM python:3.13.0-slim-bullseye@sha256:4b60efbc8e7ad07d50f9656de4108c2de55cd3a835ea75452ecab1310a178325 AS prod
 
 ENV PYTHONPATH=/app/pkgs
 WORKDIR /app

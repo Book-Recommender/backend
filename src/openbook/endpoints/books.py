@@ -2,30 +2,143 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from openbook.database import get_db
 from openbook.models import orm
-from openbook.models.schemas import Author, Book
+from openbook.models.orm import AuthorBook, Book, BookStatus, UserBook
+from openbook.models.schemas import Author as AuthorSchema, Book as BookSchema, BookRequest
 
 router = APIRouter(tags=["books"])
 
 
 @router.get("/books")
-async def get_books() -> list[Book]:
+async def get_books(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
     """Retrieve the user's book list."""
-    return []
+    user_books = (
+        db.query(Book)
+        .join(UserBook, Book.id == UserBook.book_id)
+        .join(AuthorBook, AuthorBook.book_id == Book.id)
+        .filter(UserBook.user_id == user_id)
+        .all()
+    )
+    return [
+        BookSchema(
+            id=book.id,
+            isbn=book.isbn,
+            title=book.title,
+            authors=[AuthorSchema(id=author.author_id, name=author.author.name, books=[]) for author in book.author],
+            status=book.user[0].status,
+        )
+        for book in user_books
+    ]
 
 
-@router.post("/books")
-async def add_book(id: int) -> None:
+@router.get("/books/completed")
+async def get_completed_books(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
+    """Retrieve the user's completed book list."""
+    user_books = (
+        db.query(Book)
+        .join(UserBook, Book.id == UserBook.book_id)
+        .join(AuthorBook, AuthorBook.book_id == Book.id)
+        .filter(UserBook.user_id == user_id, UserBook.status == BookStatus.COMPLETED)
+    )
+
+    return [
+        BookSchema(
+            id=book.id,
+            isbn=book.isbn,
+            title=book.title,
+            authors=[AuthorSchema(id=author.author_id, name=author.author.name, books=[]) for author in book.author],
+            status=book.user[0].status,
+        )
+        for book in user_books
+    ]
+
+
+@router.post("/books/completed")
+async def add_completed_book(book_request: BookRequest, db: Annotated[Session, Depends(get_db)]) -> None:
     """Add a book to the user's list of completed books."""
+    stmt = (
+        insert(UserBook)
+        .values(user_id=book_request.user_id, book_id=book_request.id, status=BookStatus.COMPLETED)
+        .on_conflict_do_update(
+            index_elements=[UserBook.user_id, UserBook.book_id], set_={"status": BookStatus.COMPLETED}
+        )
+    )
+    db.execute(stmt)
+    db.commit()
 
 
 @router.get("/books/recommended")
-async def get_recommended_books() -> list[Book]:
-    """Get a list of recommended books for the user."""
-    return []
+async def get_recommended_book(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
+    """Retrieve the user's completed book list."""
+    user_books = (
+        db.query(Book)
+        .join(UserBook, Book.id == UserBook.book_id)
+        .join(AuthorBook, AuthorBook.book_id == Book.id)
+        .filter(UserBook.user_id == user_id, UserBook.status == BookStatus.RECOMMENDED)
+    )
+
+    return [
+        BookSchema(
+            id=book.id,
+            isbn=book.isbn,
+            title=book.title,
+            authors=[AuthorSchema(id=author.author_id, name=author.author.name, books=[]) for author in book.author],
+            status=book.user[0].status,
+        )
+        for book in user_books
+    ]
+
+
+@router.post("/books/recommended")
+async def add_recommended_book(book_request: BookRequest, db: Annotated[Session, Depends(get_db)]) -> None:
+    """Add a book to the user's list of completed books."""
+    stmt = (
+        insert(UserBook)
+        .values(user_id=book_request.user_id, book_id=book_request.id, status=BookStatus.RECOMMENDED)
+        .on_conflict_do_update(
+            index_elements=[UserBook.user_id, UserBook.book_id], set_={"status": BookStatus.RECOMMENDED}
+        )
+    )
+    db.execute(stmt)
+    db.commit()
+
+
+@router.get("/books/reading")
+async def get_reading_book(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
+    """Retrieve the user's reading book list."""
+    user_books = (
+        db.query(Book)
+        .join(UserBook, Book.id == UserBook.book_id)
+        .join(AuthorBook, AuthorBook.book_id == Book.id)
+        .filter(UserBook.user_id == user_id, UserBook.status == BookStatus.READING)
+    )
+
+    return [
+        BookSchema(
+            id=book.id,
+            isbn=book.isbn,
+            title=book.title,
+            authors=[AuthorSchema(id=author.author_id, name=author.author.name, books=[]) for author in book.author],
+            status=book.user[0].status,
+        )
+        for book in user_books
+    ]
+
+
+@router.post("/books/reading")
+async def add_reading_book(book_request: BookRequest, db: Annotated[Session, Depends(get_db)]) -> None:
+    """Add a book to the user's list of reading books."""
+    stmt = (
+        insert(UserBook)
+        .values(user_id=book_request.user_id, book_id=book_request.id, status=BookStatus.READING)
+        .on_conflict_do_update(index_elements=[UserBook.user_id, UserBook.book_id], set_={"status": BookStatus.READING})
+    )
+    db.execute(stmt)
+    db.commit()
 
 
 @router.get("/books/search")
@@ -35,7 +148,7 @@ async def search_books(
     title: str | None = None,
     skip: int = 0,
     limit: int = 10,
-) -> list[Book]:
+) -> list[BookSchema]:
     """
     Search the database for books by title or author.
 
@@ -83,11 +196,11 @@ where fts_author = :author limit :limit offset :skip
 
     results = session.execute(stmt, params=params)
     return [
-        Book(
+        BookSchema(
             id=r[0],
             isbn=r[1],
             title=r[2],
-            authors=[Author(id=r[4], name=r[5], books=[])],
+            authors=[AuthorSchema(id=r[4], name=r[5], books=[])],
             status=orm.BookStatus.UNREAD if r[3] is None else r[3],
         )
         for r in results

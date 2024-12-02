@@ -5,22 +5,25 @@ from sqlalchemy import text
 from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
+from openbook.auth import verify_user
 from openbook.database import get_db
 from openbook.models import orm
-from openbook.models.orm import AuthorBook, Book, BookStatus, UserBook
+from openbook.models.orm import AuthorBook, Book, BookStatus, User, UserBook
 from openbook.models.schemas import Author as AuthorSchema, Book as BookSchema, BookRequest
 
 router = APIRouter(tags=["books"])
 
 
 @router.get("/books")
-async def get_books(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
+async def get_books(
+    user: Annotated[User, Depends(verify_user)], db: Annotated[Session, Depends(get_db)]
+) -> list[BookSchema]:
     """Retrieve the user's book list."""
     user_books = (
         db.query(Book)
         .join(UserBook, Book.id == UserBook.book_id)
         .join(AuthorBook, AuthorBook.book_id == Book.id)
-        .filter(UserBook.user_id == user_id)
+        .filter(UserBook.user_id == user.id)
         .all()
     )
     return [
@@ -36,13 +39,15 @@ async def get_books(user_id: int, db: Annotated[Session, Depends(get_db)]) -> li
 
 
 @router.get("/books/completed")
-async def get_completed_books(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
+async def get_completed_books(
+    user: Annotated[User, Depends(verify_user)], db: Annotated[Session, Depends(get_db)]
+) -> list[BookSchema]:
     """Retrieve the user's completed book list."""
     user_books = (
         db.query(Book)
         .join(UserBook, Book.id == UserBook.book_id)
         .join(AuthorBook, AuthorBook.book_id == Book.id)
-        .filter(UserBook.user_id == user_id, UserBook.status == BookStatus.COMPLETED)
+        .filter(UserBook.user_id == user.id, UserBook.status == BookStatus.COMPLETED)
     )
 
     return [
@@ -58,11 +63,13 @@ async def get_completed_books(user_id: int, db: Annotated[Session, Depends(get_d
 
 
 @router.post("/books/completed")
-async def add_completed_book(book_request: BookRequest, db: Annotated[Session, Depends(get_db)]) -> None:
+async def add_completed_book(
+    book: BookRequest, user: Annotated[User, Depends(verify_user)], db: Annotated[Session, Depends(get_db)]
+) -> None:
     """Add a book to the user's list of completed books."""
     stmt = (
         insert(UserBook)
-        .values(user_id=book_request.user_id, book_id=book_request.id, status=BookStatus.COMPLETED)
+        .values(user_id=user.id, book_id=book.id, status=BookStatus.COMPLETED)
         .on_conflict_do_update(
             index_elements=[UserBook.user_id, UserBook.book_id], set_={"status": BookStatus.COMPLETED}
         )
@@ -72,13 +79,15 @@ async def add_completed_book(book_request: BookRequest, db: Annotated[Session, D
 
 
 @router.get("/books/recommended")
-async def get_recommended_book(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
+async def get_recommended_book(
+    user: Annotated[User, Depends(verify_user)], db: Annotated[Session, Depends(get_db)]
+) -> list[BookSchema]:
     """Retrieve the user's completed book list."""
     user_books = (
         db.query(Book)
         .join(UserBook, Book.id == UserBook.book_id)
         .join(AuthorBook, AuthorBook.book_id == Book.id)
-        .filter(UserBook.user_id == user_id, UserBook.status == BookStatus.RECOMMENDED)
+        .filter(UserBook.user_id == user.id, UserBook.status == BookStatus.RECOMMENDED)
     )
 
     return [
@@ -93,28 +102,16 @@ async def get_recommended_book(user_id: int, db: Annotated[Session, Depends(get_
     ]
 
 
-@router.post("/books/recommended")
-async def add_recommended_book(book_request: BookRequest, db: Annotated[Session, Depends(get_db)]) -> None:
-    """Add a book to the user's list of completed books."""
-    stmt = (
-        insert(UserBook)
-        .values(user_id=book_request.user_id, book_id=book_request.id, status=BookStatus.RECOMMENDED)
-        .on_conflict_do_update(
-            index_elements=[UserBook.user_id, UserBook.book_id], set_={"status": BookStatus.RECOMMENDED}
-        )
-    )
-    db.execute(stmt)
-    db.commit()
-
-
 @router.get("/books/reading")
-async def get_reading_book(user_id: int, db: Annotated[Session, Depends(get_db)]) -> list[BookSchema]:
+async def get_reading_book(
+    user: Annotated[User, Depends(verify_user)], db: Annotated[Session, Depends(get_db)]
+) -> list[BookSchema]:
     """Retrieve the user's reading book list."""
     user_books = (
         db.query(Book)
         .join(UserBook, Book.id == UserBook.book_id)
         .join(AuthorBook, AuthorBook.book_id == Book.id)
-        .filter(UserBook.user_id == user_id, UserBook.status == BookStatus.READING)
+        .filter(UserBook.user_id == user.id, UserBook.status == BookStatus.READING)
     )
 
     return [
@@ -130,11 +127,13 @@ async def get_reading_book(user_id: int, db: Annotated[Session, Depends(get_db)]
 
 
 @router.post("/books/reading")
-async def add_reading_book(book_request: BookRequest, db: Annotated[Session, Depends(get_db)]) -> None:
+async def add_reading_book(
+    book: BookRequest, user: Annotated[User, Depends(verify_user)], db: Annotated[Session, Depends(get_db)]
+) -> None:
     """Add a book to the user's list of reading books."""
     stmt = (
         insert(UserBook)
-        .values(user_id=book_request.user_id, book_id=book_request.id, status=BookStatus.READING)
+        .values(user_id=user.id, book_id=book.id, status=BookStatus.READING)
         .on_conflict_do_update(index_elements=[UserBook.user_id, UserBook.book_id], set_={"status": BookStatus.READING})
     )
     db.execute(stmt)

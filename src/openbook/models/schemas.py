@@ -24,7 +24,6 @@ class Book(BaseModel):
 
 
 class BookRequest(BaseModel):
-    """BookRequest."""
+    """Model for requests that specify a book."""
 
     id: int
-    user_id: int

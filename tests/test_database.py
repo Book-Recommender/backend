@@ -1,11 +1,6 @@
-import sys
-from pathlib import Path
-
-# Add the `src` folder to the system path if not already a module
-sys.path.insert(0, str(Path(__file__).parent.parent / "src/openbook"))
-
 import pytest
 from fastapi.testclient import TestClient
+from openbook.auth import verify_user
 from openbook.database import get_db
 from openbook.models.orm import Author, AuthorBook, Base, Book, BookStatus, User, UserBook
 from openbook.server import app  # Assuming this is where the FastAPI app is created
@@ -27,7 +22,14 @@ def override_get_db():
         db.close()
 
 
+def verify_user_override() -> User:
+    return User(id="", email="testuser@example.com", name="Test User")
+
+
 app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[verify_user] = verify_user_override
+
+
 client = TestClient(app)
 
 
@@ -47,7 +49,7 @@ def test_get_books(setup_database):
     """
     # Create a test user in the database
     db = TestingSessionLocal()
-    user = User(email="testuser@example.com", name="Test User")
+    user = User(id="", email="testuser@example.com", name="Test User")
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -115,7 +117,7 @@ def test_get_completed_books(setup_database):
     """
     # Create a test user in the database
     db = TestingSessionLocal()
-    user = User(email="testuser@example.com", name="Test User")
+    user = User(id="", email="testuser@example.com", name="Test User")
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -185,7 +187,7 @@ def test_get_completed_books(setup_database):
 
 def test_add_completed_book(setup_database):
     db = TestingSessionLocal()
-    user = User(email="testuser@example.com", name="Test User")
+    user = User(id="", email="testuser@example.com", name="Test User")
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -216,7 +218,7 @@ def test_get_recommended_books(setup_database):
     """
     # Create a test user in the database
     db = TestingSessionLocal()
-    user = User(email="testuser@example.com", name="Test User")
+    user = User(id="", email="testuser@example.com", name="Test User")
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -284,40 +286,13 @@ def test_get_recommended_books(setup_database):
     assert response.json() == expected_books
 
 
-def test_add_recommended_book(setup_database):
-    db = TestingSessionLocal()
-    user = User(email="testuser@example.com", name="Test User")
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-
-    book = Book(title="Test Book 1", isbn="1234567890")
-    db.add(book)
-    db.commit()
-    db.refresh(book)
-
-    response = client.post("/books/recommended", json={"id": book.id, "user_id": user.id})
-    assert response.status_code == 200
-
-    user_book = db.query(UserBook).filter_by(user_id=user.id, book_id=book.id).first()
-    assert user_book is not None
-    assert user_book.status == BookStatus.RECOMMENDED
-
-    response = client.post("/books/recommended", json={"id": book.id, "user_id": user.id})
-    assert response.status_code == 200
-
-    user_book = db.query(UserBook).filter_by(user_id=user.id, book_id=book.id).first()
-    assert user_book is not None
-    assert user_book.status == BookStatus.RECOMMENDED
-
-
 def test_get_reading_books(setup_database):
     """
     Test the GET /books/recommended route to ensure it retrieves all books for a given user.
     """
     # Create a test user in the database
     db = TestingSessionLocal()
-    user = User(email="testuser@example.com", name="Test User")
+    user = User(id="", email="testuser@example.com", name="Test User")
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -387,7 +362,7 @@ def test_get_reading_books(setup_database):
 
 def test_add_reading_book(setup_database):
     db = TestingSessionLocal()
-    user = User(email="testuser@example.com", name="Test User")
+    user = User(id="", email="testuser@example.com", name="Test User")
     db.add(user)
     db.commit()
     db.refresh(user)

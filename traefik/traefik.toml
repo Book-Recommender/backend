@@ -2,11 +2,10 @@ accesslog = true
 defaultEntryPoints = ["https"]
 
 [entryPoints]
-  [entryPoints.traefik]
-  address = ":8080"
-
   [entryPoints.https]
   address = ":4430"
+  [entryPoints.https.http.tls]
+  certResolver = "letsencrypt"
 
 [api]
 dashboard = true
@@ -14,6 +13,13 @@ insecure = false
 
 [log]
 level = "INFO"
+
+[certificatesResolvers.letsencrypt.acme]
+  storage = "/letsencrypt/acme.json"
+  caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+
+  [certificatesResolvers.letsencrypt.acme.dnsChallenge]
+  provider = "cloudflare"
 
 [providers.docker]
 exposedByDefault = false

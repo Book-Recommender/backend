@@ -26,7 +26,7 @@ class UserBook(Base):
     user: Mapped["User"] = relationship("User", back_populates="book", init=False)
 
     book_id: Mapped[int] = mapped_column(ForeignKey("book.id"), primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"), primary_key=True)
     status: Mapped[BookStatus] = mapped_column(default=BookStatus.RECOMMENDED)
 
 
@@ -49,7 +49,7 @@ class User(Base):
 
     book: Mapped[list["UserBook"]] = relationship("UserBook", back_populates="user", init=False)
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, init=False)
+    id: Mapped[str] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     name: Mapped[str] = mapped_column()
 

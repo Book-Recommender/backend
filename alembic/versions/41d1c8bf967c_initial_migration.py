@@ -40,7 +40,7 @@ def upgrade() -> None:
     op.create_index("idx_book_title", "book", ["title"], unique=False)
     op.create_table(
         "user",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("id", sa.String(), autoincrement=True, nullable=False),
         sa.Column("email", sa.String(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
@@ -63,7 +63,7 @@ def upgrade() -> None:
     op.create_table(
         "user_book",
         sa.Column("book_id", sa.Integer(), nullable=False),
-        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.String(), nullable=False),
         sa.Column("status", sa.Enum("RECOMMENDED", "READING", "COMPLETED", name="bookstatus"), nullable=False),
         sa.ForeignKeyConstraint(
             ["book_id"],

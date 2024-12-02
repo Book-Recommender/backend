@@ -1,29 +1,14 @@
 from collections.abc import Generator
 
-from pydantic_settings import BaseSettings
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import ConnectionPoolEntry
 
+from openbook.constants import settings
 
-class Settings(BaseSettings):
-    """Settings function."""
-
-    DATABASE_URL: str = "sqlite:///bookclub.db"
-
-    class Config:
-        """Environment config."""
-
-        env_file = ".env"
-
-
-settings = Settings()
-
-DATABASE_URL = settings.DATABASE_URL
-
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(settings.database_url, connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

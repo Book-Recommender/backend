@@ -3,7 +3,7 @@ services:
   api:
     build: .
     tty: true
-    restart: always
+    restart: unless-stopped
     environment:
       - DATABASE_URL=sqlite:////var/lib/bookclub/bookclub.db
       - OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
@@ -13,9 +13,8 @@ services:
       - db:/var/lib/bookclub
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.savagepastaman.com`)"
-      - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
-      - "traefik.http.routers.api.middlewares=strip-api-prefix"
+      - "traefik.http.routers.api.rule=Host(`api.${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.api.tls=true"
       - "traefik.http.routers.api.tls.certresolver=letsencrypt"
 
   traefik:
@@ -23,16 +22,20 @@ services:
     ports:
       # HTTPS
       - 127.0.0.1:4430:4430
+      # Dashboard
+      - 127.0.0.1:8080:8080
     environment:
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
       - TRAEFIK_CERTIFICATESRESOLVERS_letsencrypt_ACME_EMAIL=${TLS_EMAIL}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.savagepastaman.com`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${ROOT_DOMAIN}`)"
+      - "traefik.http.routers.traefik.entryPoints=traefik"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=dashboard-auth"
       - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$FkSY0vIa$$w5n3MStAK5qPzQgevk1b10"
-
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
     volumes:
       # Scary! But should be ok for us
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -43,6 +46,13 @@ services:
       - type: bind
         source: traefik/traefik.toml
         target: /etc/traefik/traefik.toml
+
+  tunnel:
+    image: cloudflare/cloudflared
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+
 
 volumes:
   db:

@@ -7,6 +7,12 @@ defaultEntryPoints = ["https"]
 
   [entryPoints.https]
   address = ":4430"
+    [entryPoints.https.http.tls]
+    certresolver = "letsencrypt"
+
+[serversTransport]
+insecureSkipVerify = true
+
 
 [api]
 dashboard = true
@@ -14,6 +20,15 @@ insecure = false
 
 [log]
 level = "INFO"
+
+[certificatesResolvers.letsencrypt.acme]
+# email configured by env var
+storage = "/letsencrypt/acme.json"
+caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+
+  [certificatesResolvers.letsencrypt.acme.dnsChallenge]
+  provider = "cloudflare"
+  resolvers = ["8.8.8.8:53"]
 
 [providers.docker]
 exposedByDefault = false

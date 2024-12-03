@@ -49,14 +49,14 @@ async def auth(request: Request, db: Annotated[Session, Depends(get_db)]) -> Red
             db.add(user)
 
     request.session["id_token"] = token.get("id_token")
-    return RedirectResponse(url="/")
+    return RedirectResponse(url="/home")
 
 
 @router.get("/logout")
 async def logout(request: Request, user: Annotated[User, Depends(verify_user)]) -> RedirectResponse:
     """Log out the current user."""
     request.session.pop("id_token")
-    return RedirectResponse(url="/")
+    return RedirectResponse(url="/home")
 
 
 @router.get("/userinfo")
